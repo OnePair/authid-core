@@ -1,0 +1,17 @@
+authid/.classpath
+authid/.project
+authid/.settings
+authid/target
+
+
+authid/authid-btc-driver/target
+authid/authid-btc-driver/.settings
+authid/authid-btc-driver/.classpath
+authid/authid-btc-driver/.project
+
+
+authid/authid-common/target
+authid/authid-common/.settings
+authid/authid-common/.classpath
+authid/authid-common/.project  
+
