@@ -1,0 +1,14 @@
+ca/onepair/authid/common/certs/SignedChallengeCert.class
+ca/onepair/authid/common/exceptions/AuthIDDriverException.class
+ca/onepair/authid/common/exceptions/AuthIDStoreException.class
+ca/onepair/authid/common/certs/AuthIDCert.class
+ca/onepair/authid/common/exceptions/DoesNotExistException.class
+ca/onepair/authid/common/exceptions/MissingKeyException.class
+ca/onepair/authid/common/exceptions/InvalidChallengeException.class
+ca/onepair/authid/common/certs/DHChallengeCert.class
+ca/onepair/authid/common/exceptions/IDClaimedException.class
+ca/onepair/authid/common/drivers/AuthIDDriver.class
+ca/onepair/authid/common/exceptions/RevokedException.class
+ca/onepair/authid/common/model/AuthIDControllerDoc.class
+ca/onepair/authid/common/exceptions/InvalidCertException.class
+ca/onepair/authid/common/model/AuthIDProcessorDoc.class

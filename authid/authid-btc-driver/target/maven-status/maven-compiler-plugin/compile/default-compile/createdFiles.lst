@@ -1,0 +1,13 @@
+ca/onepair/authID/store/MongoDBAuthIDStore.class
+ca/onepair/authID/AuthIDBlockChain.class
+ca/onepair/authID/AuthID.class
+ca/onepair/authID/utils/BitcoinUtils.class
+ca/onepair/authID/drivers/BTCDriver.class
+ca/onepair/authID/SqliteAuthIDKeyWallet.class
+ca/onepair/authID/BTCAuthIDDriver.class
+ca/onepair/authID/AuthIDBlockChain$1.class
+ca/onepair/authID/BTCAuthID.class
+ca/onepair/authID/utils/BTCIDUtils.class
+ca/onepair/authID/store/LevelDBAuthIDStore.class
+ca/onepair/authID/AuthIDKeyWallet.class
+ca/onepair/authID/store/AuthIDStore.class
