@@ -117,9 +117,6 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 	@Override
 	public String registerId(String id, String address, int fee) throws MissingKeyException, InsufficientMoneyException,
 			IDClaimedException, AuthIDDriverException, SQLException, IOException {
-		System.out.println("number of keys:" + this.getBitcoinWallet().getImportedKeys().size());
-		System.out.println("balance:" + this.getBitcoinWallet().getBalance());
-
 		if (wallet == null)
 			throw new AuthIDDriverException(AuthIDDriverException.NO_WALLET_EXCEPTION);
 
@@ -131,10 +128,9 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 			throw new IDClaimedException();
 
 		Transaction registrationTransaction = BTCIDUtils.buildAuthIDTransaction(this.networkParams, this.authIDStore,
-				this.getBitcoinWallet(), transferTransaction, address, id, 0);
+				this.getBitcoinWallet(), transferTransaction, address, id, fee);
 		this.wallet.save();
 
-		System.out.println("registration transaction: " + Utils.HEX.encode(registrationTransaction.bitcoinSerialize()));
 		this.btcDriver.broadcastTransaction(registrationTransaction);
 		return registrationTransaction.getHashAsString();
 	}
@@ -200,7 +196,6 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 		if (signingKey == null)
 			throw new MissingKeyException();
 
-		System.out.println("getting signature!!!!");
 		// Sign the certificate
 		String signature = signingKey.signMessage(cert.getToken());
 
@@ -245,7 +240,6 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 
 		// Get the public key String
 		String publicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
-		System.out.println("generated public key: " + publicKey);
 
 		// Create the challenge document
 		DHChallengeCert challengeCert = new DHChallengeCert(publicKey, receiverID);
