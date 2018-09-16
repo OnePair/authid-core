@@ -10,7 +10,7 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 
 public class GenericAuthIDCert implements AuthIDCert {
-	public static final String TOKEN = "token";
+	public static final String TOKEN = "cert_token";
 	public static final String SIGNATURE = "signature";
 	public static final String ID_DOC = "id_doc";
 
