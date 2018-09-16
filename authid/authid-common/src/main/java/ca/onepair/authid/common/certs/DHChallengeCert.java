@@ -56,9 +56,9 @@ public class DHChallengeCert implements AuthIDCert {
 
 	@Override
 	public String getToken() {
-		JwtBuilder builder = Jwts.builder().claim(PUBLIC_KEY, this.publicKey).claim(RECEIVER_ID, this.receiverId)
+		JwtBuilder tokenBuilder = Jwts.builder().claim(PUBLIC_KEY, this.publicKey).claim(RECEIVER_ID, this.receiverId)
 				.claim(CERT_TYPE, DH_CHALLENGE_CERT);
-		return builder.compact();
+		return tokenBuilder.compact();
 	}
 
 	@Override

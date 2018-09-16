@@ -46,10 +46,10 @@ public class SignedChallengeCert implements AuthIDCert {
 
 	@Override
 	public String getToken() {
-		JwtBuilder builder = Jwts.builder().claim(RESPONSE_KEY, this.responseKey)
-				.claim(SIGNED_CHALLENGE, this.signedChallenge).claim(SIGNING_KEY, this.signingKey.getFingerprint())
+		JwtBuilder tokenBuilder = Jwts.builder().claim(RESPONSE_KEY, this.responseKey)
+				.claim(SIGNED_CHALLENGE, this.signedChallenge).claim(SIGNING_KEY, this.signingKey)
 				.claim(CERT_TYPE, SIGNED_CHALLENGE_CERT);
-		return builder.compact();
+		return tokenBuilder.compact();
 	}
 
 	@Override
@@ -89,7 +89,6 @@ public class SignedChallengeCert implements AuthIDCert {
 		JSONObject certJson = new JSONObject();
 
 		certJson.put(SIGNATURE, this.signature);
-		certJson.put(SIGNING_KEY, this.signingKey.toJSON());
 		certJson.put(ID_DOC, this.idDoc.toJSON());
 		certJson.put(TOKEN, this.getToken());
 
@@ -97,10 +96,10 @@ public class SignedChallengeCert implements AuthIDCert {
 	}
 
 	public static SignedChallengeCert fromJson(JSONObject json) {
-		AuthIDProcessorDoc signingKey = AuthIDProcessorDoc.fromJSON(json.getJSONObject(SIGNING_KEY));
 		AuthIDProcessorDoc idDoc = AuthIDProcessorDoc.fromJSON(json.getJSONObject(ID_DOC));
 
 		Claims claims = Jwts.parser().parseClaimsJwt(json.getString(TOKEN)).getBody();
+		AuthIDProcessorDoc signingKey = AuthIDProcessorDoc.fromJSON((JSONObject) claims.get(SIGNING_KEY));
 
 		return new SignedChallengeCert((String) claims.get(RESPONSE_KEY), (String) claims.get(SIGNED_CHALLENGE),
 				signingKey, (String) json.getString(SIGNATURE), idDoc);
