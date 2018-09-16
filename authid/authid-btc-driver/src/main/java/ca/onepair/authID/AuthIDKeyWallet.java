@@ -64,6 +64,13 @@ public interface AuthIDKeyWallet {
 	public List<AuthIDProcessorDoc> generateProcessorKeys(AuthIDControllerDoc controllerDoc, int amount);
 
 	/*
+	 * Deactivate an ID's processor keys
+	 * 
+	 * @param id
+	*/
+	public void deactivateProcessorKeys(String id);
+	
+	/*
 	 * Add a list of processor keys to the wallet.
 	 * 
 	 * @param List<AuthIDProcessorDoc> processorKeys The list of processor keys
@@ -86,7 +93,7 @@ public interface AuthIDKeyWallet {
 	 * @param List<AuthIDProcessorDoc> processorKeys The processor keys
 	 * 
 	 */
-	public void updateProcessorKeys(List<AuthIDProcessorDoc> processorKeys) throws SQLException;
+	public void updateProcessorKeys(List<AuthIDProcessorDoc> processorKeys, boolean active) throws SQLException;
 
 	/*
 	 * Get a randomly selected processor key

@@ -155,6 +155,9 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 		this.wallet.save();
 		this.btcDriver.broadcastTransaction(transferTransaction);
 
+		// Deactivate the processor keys
+		this.wallet.deactivateProcessorKeys(id);
+
 		return transferTransaction.getHashAsString();
 	}
 
@@ -398,7 +401,7 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 			processorKey.setSignature(signedFingerprint);
 		}
 
-		this.wallet.updateProcessorKeys(processorKeys);
+		this.wallet.updateProcessorKeys(processorKeys, true);
 	}
 
 	@Override

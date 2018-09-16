@@ -40,6 +40,7 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 	private static final String ADDRESS_FIELD = "address";
 	private static final String KEY_TYPE_FIELD = "key_type";
 	private static final String SIGNED_FIELD = "signed";
+	private static final String ACTIVE_FIELD = "active";
 
 	private Wallet wallet;
 	private NetworkParameters networkParams;
@@ -120,6 +121,25 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 	}
 
 	@Override
+	public void deactivateProcessorKeys(String id) {
+		String sql = "UPDATE " + KEYS_TABLE + " SET " + ACTIVE_FIELD + " = ?" + " WHERE " + KEY_ID_FIELD + " = ?";
+
+		PreparedStatement stmt = null;
+
+		try {
+			stmt = this.dbConnection.prepareStatement(sql);
+
+			stmt.setBoolean(1, false);
+			stmt.setString(2, id + ".BTC");
+
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
 	public void addProcessorKeys(List<AuthIDProcessorDoc> processorKeys) throws SQLException {
 		for (AuthIDProcessorDoc keyDoc : processorKeys) {
 			this.storeProcessorKey(keyDoc);
@@ -128,13 +148,13 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 
 	@Override
 	public List<AuthIDProcessorDoc> getUnsignedProcessorKeys(String id) throws SQLException {
-		return this.getProcessorKeys(id + ".BTC", false);
+		return this.getProcessorKeys(id + ".BTC", false, false);
 	}
 
 	@Override
-	public void updateProcessorKeys(List<AuthIDProcessorDoc> processorKeys) throws SQLException {
+	public void updateProcessorKeys(List<AuthIDProcessorDoc> processorKeys, boolean active) throws SQLException {
 		for (AuthIDProcessorDoc processorKey : processorKeys) {
-			this.updateProcessorKey(processorKey);
+			this.updateProcessorKey(processorKey, active);
 		}
 	}
 
@@ -143,7 +163,7 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 	 */
 	@Override
 	public AuthIDProcessorDoc getProcessorKey(String id) throws SQLException, MissingKeyException {
-		List<AuthIDProcessorDoc> processorKeys = this.getProcessorKeys(id + ".BTC", true);
+		List<AuthIDProcessorDoc> processorKeys = this.getProcessorKeys(id + ".BTC", true, true);
 		if (processorKeys.size() == 0)
 			throw new MissingKeyException("There are no processor keys for " + id);
 		return processorKeys.get(new Random().nextInt(processorKeys.size()));
@@ -162,18 +182,11 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 		this.wallet.saveToFile(this.bitcoinWalletFile);
 	}
 
-	/*
-	 * Get all the id's processor keys
-	 * 
-	 * @param String id
-	 * 
-	 * @return List<AuthIDProcessorDoc> List of processor keys
-	 */
-	private List<AuthIDProcessorDoc> getProcessorKeys(String id, boolean signed) throws SQLException {
+	private List<AuthIDProcessorDoc> getProcessorKeys(String id, boolean signed, boolean active) throws SQLException {
 		List<AuthIDProcessorDoc> processorKeys = new ArrayList<AuthIDProcessorDoc>();
 
 		String selectQuery = "SELECT " + KEY_DOC_FIELD + " FROM " + KEYS_TABLE + " WHERE " + KEY_ID_FIELD + "=? and "
-				+ KEY_TYPE_FIELD + "=? and " + SIGNED_FIELD + "=?";
+				+ KEY_TYPE_FIELD + "=? and " + SIGNED_FIELD + "=? and " + ACTIVE_FIELD + "=?";
 
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -183,6 +196,7 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 			stmt.setString(1, id);
 			stmt.setString(2, AuthIDProcessorDoc.PROCESSOR_DOC);
 			stmt.setBoolean(3, signed);
+			stmt.setBoolean(4, active);
 
 			rs = stmt.executeQuery();
 
@@ -209,7 +223,7 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 		String type = processorKey.getDocType();
 
 		String sql = "INSERT INTO " + KEYS_TABLE + "(" + KEY_ID_FIELD + "," + KEY_DOC_FIELD + "," + ADDRESS_FIELD + ","
-				+ KEY_TYPE_FIELD + "," + SIGNED_FIELD + ") " + "VALUES(?,?,?,?,?)";
+				+ KEY_TYPE_FIELD + "," + SIGNED_FIELD + "," + ACTIVE_FIELD + ") " + "VALUES(?,?,?,?,?,?)";
 
 		PreparedStatement stmt = null;
 
@@ -220,6 +234,7 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 			stmt.setString(3, address);
 			stmt.setString(4, type);
 			stmt.setBoolean(5, processorKey.getSignature() != null);
+			stmt.setBoolean(6, false);
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -229,11 +244,11 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 		}
 	}
 
-	private void updateProcessorKey(AuthIDProcessorDoc processorKey) {
+	private void updateProcessorKey(AuthIDProcessorDoc processorKey, boolean active) {
 		String address = processorKey.getAddress();
 
-		String sql = "UPDATE " + KEYS_TABLE + " SET " + KEY_DOC_FIELD + " = ?," + SIGNED_FIELD + " = ? " + " WHERE "
-				+ ADDRESS_FIELD + " = ?";
+		String sql = "UPDATE " + KEYS_TABLE + " SET " + KEY_DOC_FIELD + " = ?," + SIGNED_FIELD + " = ?," + ACTIVE_FIELD
+				+ " = ?" + " WHERE " + ADDRESS_FIELD + " = ?";
 
 		PreparedStatement stmt = null;
 
@@ -242,7 +257,8 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 
 			stmt.setString(1, processorKey.toJSON().toString());
 			stmt.setBoolean(2, processorKey.getSignature() != null);
-			stmt.setString(3, address);
+			stmt.setBoolean(3, true);
+			stmt.setString(4, address);
 
 			stmt.executeUpdate();
 		} catch (SQLException e) {
@@ -291,13 +307,9 @@ public class SqliteAuthIDKeyWallet implements AuthIDKeyWallet {
 		this.dbConnection = DriverManager
 				.getConnection("jdbc:sqlite:" + this.subWalletDir.getAbsolutePath() + "/" + KEYS_DB);
 
-		// String createTableSql = "CREATE TABLE IF NOT EXISTS " + KEYS_TABLE +
-		// "(" + KEY_DOC_FIELD + " TEXT PRIMARY KEY,"
-		// + ADDRESS_FIELD + " TEXT," + KEY_TYPE_FIELD + " TEXT)";
 		String createTableSql = "CREATE TABLE IF NOT EXISTS " + KEYS_TABLE + "(" + KEY_ID_FIELD + " TEXT,"
 				+ KEY_DOC_FIELD + " TEXT," + ADDRESS_FIELD + " TEXT," + KEY_TYPE_FIELD + " TEXT," + SIGNED_FIELD
-				+ " BOOLEAN)";
-		System.out.println("Create table sql: " + createTableSql);
+				+ " BOOLEAN," + ACTIVE_FIELD + " BOOLEAN)";
 
 		Statement stmt = null;
 
