@@ -395,8 +395,6 @@ public class BTCAuthIDDriver implements AuthIDDriver {
 
 		for (AuthIDProcessorDoc processorKey : processorKeys) {
 			String fingerprint = processorKey.getFingerprint();
-			// String hashedFingerprint =
-			// Utils.HEX.encode(Sha256Hash.hash(fingerprint.getBytes()));
 			String signedFingerprint = key.signMessage(fingerprint);
 			processorKey.setSignature(signedFingerprint);
 		}

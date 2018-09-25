@@ -1,5 +1,7 @@
 package ca.onepair.authid.common.certs;
 
+import java.util.HashMap;
+
 import org.json.JSONObject;
 
 import ca.onepair.authid.common.model.AuthIDProcessorDoc;
@@ -99,7 +101,10 @@ public class SignedChallengeCert implements AuthIDCert {
 		AuthIDProcessorDoc idDoc = AuthIDProcessorDoc.fromJSON(json.getJSONObject(ID_DOC));
 
 		Claims claims = Jwts.parser().parseClaimsJwt(json.getString(TOKEN)).getBody();
-		AuthIDProcessorDoc signingKey = AuthIDProcessorDoc.fromJSON((JSONObject) claims.get(SIGNING_KEY));
+
+		AuthIDProcessorDoc signingKey = AuthIDProcessorDoc
+				.fromJSON(new JSONObject((HashMap<String, String>) claims.get(SIGNING_KEY)));
+		System.out.println("got signing key");
 
 		return new SignedChallengeCert((String) claims.get(RESPONSE_KEY), (String) claims.get(SIGNED_CHALLENGE),
 				signingKey, (String) json.getString(SIGNATURE), idDoc);
